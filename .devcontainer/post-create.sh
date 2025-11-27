@@ -11,22 +11,22 @@ sudo mv ./kind /usr/local/bin/
 echo "✅ kind installed"
 
 # Install workshop dependencies for all modules
-echo "📦 Installing Python dependencies..."
-if [ -f requirements.txt ]; then
-    pip install --upgrade pip
-    pip install -r requirements.txt
-    echo "✅ Python dependencies installed"
-else
-    echo "⚠️  No requirements.txt found in root, skipping..."
-fi
+# echo "📦 Installing Python dependencies..."
+# if [ -f requirements.txt ]; then
+#     pip install --upgrade pip
+#     pip install -r requirements.txt
+#     echo "✅ Python dependencies installed"
+# else
+#     echo "⚠️  No requirements.txt found in root, skipping..."
+# fi
 
-# Install module-specific dependencies
-for module_dir in modules/module-*; do
-    if [ -f "$module_dir/requirements.txt" ]; then
-        echo "📦 Installing dependencies for $module_dir..."
-        pip install -r "$module_dir/requirements.txt"
-    fi
-done
+# # Install module-specific dependencies
+# for module_dir in modules/module-*; do
+#     if [ -f "$module_dir/requirements.txt" ]; then
+#         echo "📦 Installing dependencies for $module_dir..."
+#         pip install -r "$module_dir/requirements.txt"
+#     fi
+# done
 
 echo ""
 echo "✅ MLOps Workshop environment ready!"
