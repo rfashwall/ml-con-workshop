@@ -142,7 +142,7 @@ spec:
         # YOUR CODE HERE
         name: ""  # FILL IN: Container name
 
-        # TODO 12: Set image to "sentiment_service:v1"
+        # TODO 12: Set image to "sentiment-api:v1"
         # YOUR CODE HERE
         image: ""  # FILL IN: Docker image name
 

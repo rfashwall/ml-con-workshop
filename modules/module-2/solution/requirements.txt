@@ -2,7 +2,7 @@
 # Python 3.9+ recommended
 
 # BentoML framework
-bentoml>=1.1.0
+bentoml>=1.4.0
 
 # ML frameworks (for model loading)
 transformers>=4.35.0
@@ -10,7 +10,7 @@ torch>=2.0.0
 torchvision
 
 # MLflow integration (load models from Module 1)
-mlflow>=2.8.0
+mlflow>=3.4.0
 
 # Data validation
 pydantic>=2.0.0

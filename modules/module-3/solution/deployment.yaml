@@ -142,7 +142,7 @@ spec:
 
       containers:
       - name: sentiment-api
-        image: sentiment_service:v1
+        image: sentiment-api:v1
         imagePullPolicy: Never
 
         ports:

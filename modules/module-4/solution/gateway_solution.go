@@ -544,12 +544,12 @@ func main() {
 //   - Health checks on /health
 //
 // Build:
-//   go build -o gateway step2-production-gateway.go
-//   GOOS=linux GOARCH=amd64 go build -o gateway step2-production-gateway.go
+//   go build -o gateway gateway_solution.go
+//   GOOS=linux GOARCH=amd64 go build -o gateway gateway_solution.go
 //
 // Run Locally:
 //   export BACKEND_URL=http://localhost:3000
 //   export LOG_LEVEL=debug
-//   go run step2-production-gateway.go
+//   go run gateway_solution.go
 //
 // =============================================================================
