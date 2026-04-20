@@ -1,0 +1,139 @@
+# Step 3: Health Probes & ConfigMap
+# ==================================
+# Adds startup, liveness, and readiness probes plus a ConfigMap
+# for externalised environment variables.
+# Still missing: HPA, PDB, pod anti-affinity
+
+---
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: sentiment-api-config
+  labels:
+    app: sentiment-api
+
+data:
+  BENTOML_PORT: "3000"
+  WORKERS: "2"
+  LOG_LEVEL: "INFO"
+  MODEL_LOAD_TIMEOUT: "30"
+  REQUEST_TIMEOUT: "10"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: sentiment-api
+  labels:
+    app: sentiment-api
+    module: module-3
+    step: step3
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: sentiment-api
+
+  template:
+    metadata:
+      labels:
+        app: sentiment-api
+        version: v1
+
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+
+    spec:
+      containers:
+      - name: sentiment-api
+        image: sentiment-api:v1
+        imagePullPolicy: Never
+
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "1000m"
+            memory: "2Gi"
+
+        envFrom:
+        - configMapRef:
+            name: sentiment-api-config
+
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: bentoml-cache
+          mountPath: /home/bentoml/.bentoml
+        - name: transformers-cache
+          mountPath: /tmp/transformers_cache
+
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 60
+
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+          initialDelaySeconds: 0
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: bentoml-cache
+        emptyDir: {}
+      - name: transformers-cache
+        emptyDir:
+          sizeLimit: 2Gi
+
+---
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: sentiment-api-service
+  labels:
+    app: sentiment-api
+
+spec:
+  type: NodePort
+
+  selector:
+    app: sentiment-api
+
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 3000
+    nodePort: 30080

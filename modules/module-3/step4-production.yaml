@@ -1,0 +1,461 @@
+# ConfigMap with Production Configuration
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: sentiment-api-config
+  labels:
+    app: sentiment-api
+    environment: production
+    managed-by: mlops-workshop
+
+data:
+  BENTOML_PORT: "3000"
+  WORKERS: "2"
+  LOG_LEVEL: "INFO"
+  MODEL_LOAD_TIMEOUT: "30"
+  REQUEST_TIMEOUT: "10"
+
+  # Production-specific settings
+  # Note: BentoML has built-in metrics on /metrics endpoint (same port as service)
+  ENABLE_TRACING: "false"
+
+---
+# Deployment with Full Production Configuration
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: sentiment-api
+  labels:
+    app: sentiment-api
+    module: module-3
+    step: step4
+    environment: production
+    version: v1
+
+  # Annotations for operational metadata
+  annotations:
+    description: "Sentiment Analysis API - Production MLOps Workshop"
+    maintainer: "mlops-workshop-team"
+    deployment-date: "2024-11-19"
+
+spec:
+  # Initial replicas (HPA will adjust this)
+  replicas: 2
+
+  # =================================================================
+  # ROLLING UPDATE STRATEGY (Production Configuration)
+  # =================================================================
+  #
+  # Controls how updates are rolled out
+  # Zero-downtime deployments!
+  #
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # Max number of pods that can be unavailable during update
+      # 25% = if you have 4 pods, 1 can be down at a time
+      # This ensures 75% capacity during updates
+      maxUnavailable: 25%
+
+      # Max number of extra pods created during update
+      # 25% = if you have 4 pods, can create 1 extra (total 5)
+      # This prevents resource exhaustion during updates
+      maxSurge: 25%
+
+  # How long to wait before considering deployment failed
+  # 600 seconds = 10 minutes (generous for ML model loading)
+  progressDeadlineSeconds: 600
+
+  # How many old ReplicaSets to keep for rollback
+  # Allows rollback to previous 5 versions
+  revisionHistoryLimit: 5
+
+  selector:
+    matchLabels:
+      app: sentiment-api
+
+  template:
+    metadata:
+      labels:
+        app: sentiment-api
+        version: v1
+        environment: production
+
+      # Annotations for pod-level metadata
+      annotations:
+        # Prometheus scraping configuration
+        # BentoML exposes metrics on /metrics at the main service port
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+
+    spec:
+      # =================================================================
+      # SECURITY CONTEXT (Pod-level)
+      # =================================================================
+      #
+      # Security settings applied to ALL containers in the pod
+      # NOTE: BentoML containers require relaxed security for proper operation
+      # In production, adjust these settings based on your security requirements
+      #
+      securityContext:
+        # Run as root user for BentoML compatibility
+        # Note: BentoML containers need write access to various directories
+        runAsNonRoot: false
+        runAsUser: 0          # Root user for BentoML
+        runAsGroup: 0
+        fsGroup: 0            # For volume permissions
+
+      # =================================================================
+      # POD ANTI-AFFINITY (High Availability)
+      # =================================================================
+      #
+      # Ensures pods are spread across different nodes
+      # If one node fails, you still have pods on other nodes
+      #
+      affinity:
+        podAntiAffinity:
+          # Preferred = soft requirement (best effort)
+          # Required = hard requirement (must be satisfied)
+          # We use preferred to avoid unschedulable pods
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              # Don't schedule on same node as other sentiment-api pods
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - sentiment-api
+
+              # Topology key: hostname means different nodes
+              # Could also use: zone, region for multi-AZ/region
+              topologyKey: kubernetes.io/hostname
+
+      # How long to wait before forcefully killing pod
+      # 30 seconds allows graceful shutdown
+      # Important for ML: Finish processing in-flight requests
+      terminationGracePeriodSeconds: 30
+
+      containers:
+      - name: sentiment-api
+        image: sentiment-api:v1
+        imagePullPolicy: Never
+
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+
+        # Note: BentoML exposes /metrics on the same port (3000)
+        # No need for a separate metrics port
+
+        # =================================================================
+        # SECURITY CONTEXT (Container-level)
+        # =================================================================
+        #
+        # Additional security settings for this specific container
+        #
+        securityContext:
+          # Prevent privilege escalation
+          # Even if app tries to gain privileges, it can't
+          allowPrivilegeEscalation: false
+
+          # Make root filesystem writable for BentoML
+          # BentoML requires write access to various directories
+          # Note: readOnlyRootFilesystem: true causes permission errors
+          readOnlyRootFilesystem: false
+
+        # Resource management (from step2)
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "1000m"
+            memory: "2Gi"
+
+        # Environment from ConfigMap (from step3)
+        envFrom:
+        - configMapRef:
+            name: sentiment-api-config
+        volumeMounts:
+        # Temp directory for Python
+        - name: tmp
+          mountPath: /tmp
+
+        # BentoML working directory
+        - name: bentoml-cache
+          mountPath: /home/bentoml/.bentoml
+
+        # Transformers cache (for model files)
+        - name: transformers-cache
+          mountPath: /tmp/transformers_cache
+
+        # Health probes (from step3)
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 60
+
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+            scheme: HTTP
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+            scheme: HTTP
+          initialDelaySeconds: 0
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 2
+      volumes:
+      - name: tmp
+        emptyDir: {}
+
+      - name: bentoml-cache
+        emptyDir: {}
+
+      - name: transformers-cache
+        emptyDir:
+          # Size limit prevents filling up node disk
+          sizeLimit: 2Gi
+
+---
+# Service (unchanged from previous steps)
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: sentiment-api-service
+  labels:
+    app: sentiment-api
+
+spec:
+  type: NodePort
+
+  selector:
+    app: sentiment-api
+
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 3000
+    nodePort: 30080
+
+---
+# =============================================================================
+# HORIZONTAL POD AUTOSCALER (NEW IN STEP 4)
+# =============================================================================
+#
+# HPA automatically adjusts the number of pods based on observed metrics
+# Think: "Auto-scaling" based on CPU/memory usage
+#
+# How it works:
+# 1. HPA checks metrics every 15 seconds (by default)
+# 2. If CPU > 70% average → Scale up (add pods)
+# 3. If CPU < 70% average → Scale down (remove pods)
+# 4. Respects min/max bounds
+#
+# Why we need this for ML:
+# - Traffic varies throughout the day
+# - Don't want to overprovision (waste money)
+# - Don't want to underprovision (slow responses)
+# - Automatic = no manual intervention needed
+#
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+
+metadata:
+  name: sentiment-api-hpa
+  labels:
+    app: sentiment-api
+
+spec:
+  # Which deployment to scale
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sentiment-api
+
+  # Minimum number of replicas
+  # Even at 2am with zero traffic, maintain 2 pods
+  # Why 2? High availability (if one pod fails, you still have one)
+  minReplicas: 2
+
+  # Maximum number of replicas
+  # Don't scale beyond this even if CPU is 100%
+  # Protects from:
+  # - Runaway scaling costs
+  # - Overwhelming downstream services
+  # - Resource exhaustion
+  maxReplicas: 10
+
+  # =================================================================
+  # SCALING METRICS
+  # =================================================================
+  #
+  # HPA can scale based on multiple metrics
+  # We use CPU and memory (most common for ML workloads)
+  #
+  metrics:
+  # Metric 1: CPU Utilization
+  # -------------------------
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        # Target 70% of requested CPU
+        # If average CPU across all pods > 70% → scale up
+        # If average CPU across all pods < 70% → scale down
+        #
+        # Why 70% not 90%?
+        # - Leaves headroom for traffic spikes
+        # - Prevents constant scaling (oscillation)
+        # - Balances cost vs performance
+        averageUtilization: 70
+
+  # Metric 2: Memory Utilization
+  # ----------------------------
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        # Target 80% of requested memory
+        # Higher than CPU because memory doesn't spike as much
+        #
+        # Why 80% not 70%?
+        # - Memory usage more stable than CPU
+        # - ML models have predictable memory footprint
+        # - Less headroom needed
+        averageUtilization: 80
+
+  # =================================================================
+  # SCALING BEHAVIOR (Fine-tuned for ML workloads)
+  # =================================================================
+  #
+  # Controls HOW FAST to scale up/down
+  # ML workloads need careful tuning because:
+  # - Model loading takes time (30-60 seconds)
+  # - Too fast scale-up = waste (model not loaded yet)
+  # - Too fast scale-down = unnecessary restarts
+  #
+  behavior:
+    # Scale UP behavior
+    # ----------------
+    scaleUp:
+      # How long to wait after last scale-up before scaling up again
+      # 60 seconds = give new pods time to start and serve traffic
+      # Prevents rapid oscillation
+      stabilizationWindowSeconds: 60
+
+      policies:
+      # Policy 1: Add up to 2 pods per minute
+      # Conservative scaling to avoid overshooting
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+
+      # Policy 2: Or increase by 50% per minute
+      # Whichever is higher
+      # If you have 2 pods, 50% = 1 pod
+      # If you have 10 pods, 50% = 5 pods
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+
+      # Select policy that adds MORE pods (aggressive scale-up)
+      # Better to overprovision temporarily than drop requests
+      selectPolicy: Max
+
+    # Scale DOWN behavior
+    # -------------------
+    scaleDown:
+      # How long to wait before scaling down
+      # 300 seconds (5 minutes) = ensure traffic actually decreased
+      # Much longer than scale-up to prevent oscillation
+      # "Traffic spike" vs "actual increase" distinction
+      stabilizationWindowSeconds: 300
+
+      policies:
+      # Policy 1: Remove at most 1 pod per 2 minutes
+      # Very conservative (ML models take time to load)
+      # Don't want to scale down then immediately scale up
+      - type: Pods
+        value: 1
+        periodSeconds: 120
+
+      # Policy 2: Or decrease by 10% per 2 minutes
+      # Very conservative percentage
+      - type: Percent
+        value: 10
+        periodSeconds: 120
+
+      # Select policy that removes FEWER pods (conservative scale-down)
+      # Keep capacity longer to handle potential traffic return
+      selectPolicy: Min
+
+---
+# =============================================================================
+# POD DISRUPTION BUDGET (NEW IN STEP 4)
+# =============================================================================
+#
+# PDB ensures minimum availability during voluntary disruptions
+# Think: "Availability guarantee during maintenance"
+#
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+
+metadata:
+  name: sentiment-api-pdb
+  labels:
+    app: sentiment-api
+
+spec:
+  # Which pods does this PDB protect?
+  selector:
+    matchLabels:
+      app: sentiment-api
+
+  # Minimum number of pods that must remain available
+  # During any voluntary disruption
+  #
+  # Option 1: minAvailable (what we use)
+  # minAvailable: 1  = at least 1 pod always running
+  #
+  # Option 2: maxUnavailable
+  # maxUnavailable: 1 = at most 1 pod can be down
+  #
+  # For our setup:
+  # - minReplicas: 2 (from HPA)
+  # - minAvailable: 1 (from PDB)
+  # - Result: Always at least 1 pod serving traffic
+  #
+  # If you have 10 pods:
+  # - minAvailable: 1 means 9 can be disrupted (too aggressive)
+  # - minAvailable: 5 means always 50% available (better)
+  # - maxUnavailable: 3 means at most 30% can be down (also good)
+  #
+  minAvailable: 1
