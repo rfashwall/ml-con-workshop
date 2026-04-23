@@ -60,7 +60,7 @@ if ($clusters | Select-String "mlops-workshop") {
         exit 1
     }
 } else {
-    Write-Host "WRN kind cluster 'mlops-workshop' not found — creating..." -ForegroundColor Yellow
+    Write-Host "WRN kind cluster 'mlops-workshop' not found - creating..." -ForegroundColor Yellow
     kind create cluster --name mlops-workshop
     Write-Host "OK  Cluster created`n" -ForegroundColor Green
 }
@@ -74,7 +74,7 @@ Write-Host "3. Checking Git repository..." -ForegroundColor Yellow
 git rev-parse --git-dir 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERR Not in a Git repository" -ForegroundColor Red
-    Write-Host "    Run: git init && git add . && git commit -m 'Initial commit'"
+    Write-Host "    Run: git init; git add .; git commit -m 'Initial commit'"
     exit 1
 }
 Write-Host "OK  Git repository initialized" -ForegroundColor Green
@@ -112,8 +112,8 @@ Write-Host "3. After the workflow completes, deploy manually:" -ForegroundColor 
 Write-Host "   Follow the deployment instructions in the GitHub Actions summary`n"
 
 Write-Host "4. Test the deployed services:" -ForegroundColor Yellow
-Write-Host "   curl http://localhost:30080/health"                                               -ForegroundColor Cyan
-Write-Host "   curl -X POST http://localhost:30080/predict -H 'Content-Type: application/json' \`"-ForegroundColor Cyan
-Write-Host "        -d '{`"request`": {`"text`": `"This workshop is great!`"}}'`n"              -ForegroundColor Cyan
+Write-Host "   curl http://localhost:30080/health"                                                         -ForegroundColor Cyan
+Write-Host "   curl -X POST http://localhost:30080/predict -H 'Content-Type: application/json'"           -ForegroundColor Cyan
+Write-Host "        -d '{`"request`": {`"text`": `"This workshop is great!`"}}'`n"                        -ForegroundColor Cyan
 
 Write-Host "For more details see: modules/module-7/README.md" -ForegroundColor Yellow

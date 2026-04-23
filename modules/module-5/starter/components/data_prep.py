@@ -20,8 +20,8 @@ from kfp.dsl import component, Output, Dataset
 # HINT: Set base_image to "python:3.11-slim"
 # HINT: Set packages_to_install to ["pandas==2.0.3", "scikit-learn==1.3.2"]
 @component(
-    base_image="????",  # YOUR CODE HERE
-    packages_to_install=["????", "????"]  # YOUR CODE HERE
+    base_image="????",  # TODO 1: Set to "python:3.11-slim"
+    packages_to_install=["????", "????"]  # TODO 1: Set to ["pandas==2.0.3", "scikit-learn==1.3.2"]
 )
 def prepare_data(
     train_data: Output[Dataset],
@@ -50,15 +50,13 @@ def prepare_data(
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
 
-    # TODO 2: Set the dataset URL
-    # HINT: Use "https://files.grouplens.org/datasets/movielens/ml-100k.zip"
+    # TODO 2: Set the dataset URL to "https://files.grouplens.org/datasets/movielens/ml-100k.zip"
     dataset_url = "????"  # YOUR CODE HERE
     zip_path = "/tmp/ml-100k.zip"
 
     logger.info(f"Downloading MovieLens dataset from {dataset_url}")
 
-    # TODO 3: Download the dataset using urllib.request.urlretrieve()
-    # HINT: urlretrieve(dataset_url, zip_path)
+    # TODO 3: Download the dataset using urllib.request.urlretrieve(dataset_url, zip_path)
     # YOUR CODE HERE
 
     # Extract the zip file
@@ -66,29 +64,25 @@ def prepare_data(
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall("/tmp")
 
-    # TODO 4: Load ratings data using pd.read_csv()
-    # HINT: File path is "/tmp/ml-100k/u.data"
-    # HINT: Use sep='\t', names=['userId', 'movieId', 'rating', 'timestamp'], engine='python'
+    # TODO 4: Load ratings data with pd.read_csv("/tmp/ml-100k/u.data",
+    #         sep='\t', names=['userId', 'movieId', 'rating', 'timestamp'], engine='python')
     ratings = None  # YOUR CODE HERE
 
     logger.info(f"Loaded {len(ratings)} ratings")
     logger.info(f"Users: {ratings['userId'].nunique()}")
     logger.info(f"Movies: {ratings['movieId'].nunique()}")
 
-    # TODO 5: Create train/test split using train_test_split()
-    # HINT: train_test_split(ratings, test_size=test_ratio, random_state=random_state)
-    # HINT: Returns two DataFrames: train_df, test_df
+    # TODO 5: Split into train/test using train_test_split(ratings, test_size=test_ratio, random_state=random_state)
+    #         Unpack the result into train_df, test_df
     train_df, test_df = None, None  # YOUR CODE HERE
 
     logger.info(f"Train set: {len(train_df)} ratings")
     logger.info(f"Test set: {len(test_df)} ratings")
 
-    # TODO 6: Save training data to train_data.path
-    # HINT: train_df.to_csv(train_data.path, index=False)
+    # TODO 6: Save training data — train_df.to_csv(train_data.path, index=False)
     # YOUR CODE HERE
 
-    # TODO 7: Save test data to test_data.path
-    # HINT: test_df.to_csv(test_data.path, index=False)
+    # TODO 7: Save test data — test_df.to_csv(test_data.path, index=False)
     # YOUR CODE HERE
 
     logger.info(f"Data preparation complete")
