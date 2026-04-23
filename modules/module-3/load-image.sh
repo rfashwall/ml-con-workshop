@@ -28,7 +28,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-IMAGE_NAME="sentiment-service"
+IMAGE_NAME="sentiment-api"
 IMAGE_TAG="v1"
 FULL_IMAGE="$IMAGE_NAME:$IMAGE_TAG"
 CLUSTER_NAME="mlops-workshop"

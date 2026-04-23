@@ -20,8 +20,8 @@ from kfp.dsl import component, Input, Output, Dataset, Model, Metrics
 # HINT: base_image="python:3.11-slim"
 # HINT: packages_to_install=["pandas==2.0.3", "numpy==1.24.3", "scikit-learn==1.3.2"]
 @component(
-    base_image="????",  # YOUR CODE HERE
-    packages_to_install=["????", "????", "????"]  # YOUR CODE HERE
+    base_image="????",  # TODO 1: Set to "python:3.11-slim"
+    packages_to_install=["????", "????", "????"]  # TODO 1: Set to ["pandas==2.0.3", "numpy==1.24.3", "scikit-learn==1.3.2"]
 )
 def train_model(
     train_data: Input[Dataset],
@@ -50,8 +50,7 @@ def train_model(
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
 
-    # TODO 2: Load training data from train_data.path
-    # HINT: pd.read_csv(train_data.path)
+    # TODO 2: Load training data — pd.read_csv(train_data.path)
     ratings_df = None  # YOUR CODE HERE
 
     logger.info(f"Training on {len(ratings_df)} ratings")
@@ -77,17 +76,14 @@ def train_model(
 
     logger.info(f"Created user-movie matrix: {user_movie_matrix.shape}")
 
-    # TODO 3: Create TruncatedSVD model
-    # HINT: TruncatedSVD(n_components=n_components, random_state=random_state)
+    # TODO 3: Create TruncatedSVD(n_components=n_components, random_state=random_state)
     svd_model = None  # YOUR CODE HERE
 
-    # TODO 4: Train SVD model using fit_transform on user_movie_matrix
-    # HINT: svd_model.fit_transform(user_movie_matrix)
-    # HINT: This returns user_factors matrix
+    # TODO 4: Fit and transform the user_movie_matrix — svd_model.fit_transform(user_movie_matrix)
+    #         The result is the user_factors matrix
     user_factors = None  # YOUR CODE HERE
 
     # TODO 5: Get movie factors from svd_model.components_.T
-    # HINT: movie_factors = svd_model.components_.T
     movie_factors = None  # YOUR CODE HERE
 
     # Calculate training metrics
@@ -104,16 +100,14 @@ def train_model(
     logger.info(f"Training complete. RMSE: {rmse:.3f}, "
                f"Explained Variance: {explained_variance:.3f}")
 
-    # TODO 6: Log RMSE metric using metrics.log_metric()
-    # HINT: metrics.log_metric("rmse", float(rmse))
+    # TODO 6: Log RMSE — metrics.log_metric("rmse", float(rmse))
     # YOUR CODE HERE
 
-    # TODO 7: Log explained_variance metric
-    # HINT: metrics.log_metric("explained_variance", float(explained_variance))
+    # TODO 7: Log explained variance — metrics.log_metric("explained_variance", float(explained_variance))
     # YOUR CODE HERE
 
-    # TODO 8: Log additional metrics
-    # HINT: Log "n_components", "n_users", "n_movies", "n_ratings"
+    # TODO 8: Log additional metrics: "n_components", "n_users", "n_movies", "n_ratings"
+    #         Use metrics.log_metric(name, value) for each
     # YOUR CODE HERE (4 lines)
 
     # Save model data
@@ -129,8 +123,8 @@ def train_model(
         'random_state': random_state
     }
 
-    # TODO 9: Save model using pickle
-    # HINT: with open(model.path, 'wb') as f: pickle.dump(model_data, f)
+    # TODO 9: Save model_data dict to model.path using pickle
+    #         with open(model.path, 'wb') as f: pickle.dump(model_data, f)
     # YOUR CODE HERE (2 lines)
 
     logger.info(f"Model saved to {model.path}")

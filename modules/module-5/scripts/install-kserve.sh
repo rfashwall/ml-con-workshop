@@ -51,6 +51,10 @@ kubectl wait --for=condition=available --timeout=600s deployment/cert-manager-we
 kubectl apply -f https://github.com/kserve/kserve/releases/download/${KSERVE_VERSION}/kserve.yaml
 kubectl apply -f https://github.com/kserve/kserve/releases/download/${KSERVE_VERSION}/kserve-runtimes.yaml
 
+# gcr.io/kubebuilder/kube-rbac-proxy was removed; patch to the current quay.io mirror
+echo -e "${YELLOW}Patching kube-rbac-proxy image (gcr.io retired, redirecting to quay.io)...${NC}"
+kubectl set image deployment/kserve-controller-manager -n kserve kube-rbac-proxy=quay.io/brancz/kube-rbac-proxy:v0.13.1
+
 # Wait for KServe
 kubectl wait --for=condition=available --timeout=600s deployment/kserve-controller-manager -n kserve
 

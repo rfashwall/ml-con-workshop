@@ -1,0 +1,77 @@
+# Step 2: Resource Limits
+# =======================
+# Adds CPU and memory requests/limits for QoS class Burstable:
+# - CPU request: 500m, limit: 1000m
+# - Memory request: 1Gi, limit: 2Gi
+# Still missing: health checks, ConfigMap, auto-scaling
+
+---
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: sentiment-api
+  labels:
+    app: sentiment-api
+    module: module-3
+    step: step2
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: sentiment-api
+
+  template:
+    metadata:
+      labels:
+        app: sentiment-api
+        version: v1
+
+    spec:
+      containers:
+      - name: sentiment-api
+        image: sentiment-api:v1
+        imagePullPolicy: Never
+
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+
+        env:
+        - name: BENTOML_PORT
+          value: "3000"
+        - name: WORKERS
+          value: "2"
+
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "1000m"
+            memory: "2Gi"
+
+---
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: sentiment-api-service
+  labels:
+    app: sentiment-api
+
+spec:
+  type: NodePort
+
+  selector:
+    app: sentiment-api
+
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 3000
+    nodePort: 30080

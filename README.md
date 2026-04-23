@@ -14,8 +14,9 @@ This 6-hour intensive workshop teaches you to deploy and maintain machine learni
 - CI/CD pipelines for ML models
 
 **Setup Options:**
-- Local (macOS): Python 3.11+, Docker Desktop, kubectl, kind
-- GitHub Codespaces: Pre-configured cloud environment
+- Local (macOS or Linux): Python 3.11+, Docker Desktop, kubectl, kind
+- Local (Windows): WSL 2 + Ubuntu + Docker Desktop ([instructions](https://github.com/rfashwall/ml-con-workshop/wiki/Module-0#option-c-windows-wsl-2))
+- GitHub Codespaces: Pre-configured cloud environment (works on any OS)
 
 ## Who Am I!
 

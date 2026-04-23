@@ -33,8 +33,8 @@ COPY go.mod go.sum ./
 # This layer is cached unless go.mod/go.sum changes
 RUN go mod download
 
-# Copy source code
-COPY step2-production-gateway.go ./
+# Copy source code — students' completed gateway lives in starter/
+COPY starter/gateway.go ./gateway.go
 
 # Build the binary
 # Flags explained:
@@ -48,7 +48,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags="-w -s" \
     -trimpath \
     -o gateway \
-    step2-production-gateway.go
+    gateway.go
 
 # =============================================================================
 # STAGE 2: RUNTIME

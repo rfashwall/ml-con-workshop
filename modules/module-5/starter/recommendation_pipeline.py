@@ -19,8 +19,8 @@ from components.evaluate import evaluate_model
 # HINT: name="movie-recommendation-pipeline"
 # HINT: description="End-to-end pipeline for training and deploying movie recommendation model"
 @pipeline(
-    name="????",  # YOUR CODE HERE
-    description="????"  # YOUR CODE HERE
+    name="????",  # TODO 1: Set to "movie-recommendation-pipeline"
+    description="????"  # TODO 1: Set to "End-to-end pipeline for training and deploying movie recommendation model"
 )
 def recommendation_pipeline(
     dataset_size: str = "100k",
@@ -40,36 +40,33 @@ def recommendation_pipeline(
         deploy_model_flag: Whether to deploy the model (requires KServe)
     """
 
-    # TODO 2: Create data preparation task
-    # HINT: Call prepare_data() with dataset_size, test_ratio, random_state
-    # HINT: Store result in data_prep_task
+    # TODO 2: Call prepare_data(dataset_size=dataset_size, test_ratio=test_ratio, random_state=random_state)
+    #         and store the result in data_prep_task
     data_prep_task = None  # YOUR CODE HERE
 
-    # TODO 3: Set display name for data prep task
-    # HINT: data_prep_task.set_display_name("Prepare MovieLens Data")
+    # TODO 3: Set display name — data_prep_task.set_display_name("Prepare MovieLens Data")
     # YOUR CODE HERE
 
-    # TODO 4: Create training task
-    # HINT: Call train_model() with:
-    #   - train_data=data_prep_task.outputs["train_data"]
-    #   - n_components=n_components
-    #   - random_state=random_state
+    # TODO 4: Call train_model() passing:
+    #           train_data=data_prep_task.outputs["train_data"]
+    #           n_components=n_components, random_state=random_state
+    #         Store result in train_task
     train_task = None  # YOUR CODE HERE
 
-    # TODO 5: Set display name and dependency for train task
-    # HINT: train_task.set_display_name("Train Recommendation Model")
-    # HINT: train_task.after(data_prep_task)
+    # TODO 5: Set display name and dependency for train_task
+    #         train_task.set_display_name("Train Recommendation Model")
+    #         train_task.after(data_prep_task)
     # YOUR CODE HERE (2 lines)
 
-    # TODO 6: Create evaluation task
-    # HINT: Call evaluate_model() with:
-    #   - test_data=data_prep_task.outputs["test_data"]
-    #   - model=train_task.outputs["model"]
+    # TODO 6: Call evaluate_model() passing:
+    #           test_data=data_prep_task.outputs["test_data"]
+    #           model=train_task.outputs["model"]
+    #         Store result in eval_task
     eval_task = None  # YOUR CODE HERE
 
-    # TODO 7: Set display name and dependency for eval task
-    # HINT: eval_task.set_display_name("Evaluate Model")
-    # HINT: eval_task.after(train_task)
+    # TODO 7: Set display name and dependency for eval_task
+    #         eval_task.set_display_name("Evaluate Model")
+    #         eval_task.after(train_task)
     # YOUR CODE HERE (2 lines)
 
     # Note: Deployment step is commented out for workshop
@@ -94,8 +91,8 @@ def compile_pipeline(output_path: str = "recommendation_pipeline.yaml"):
     Args:
         output_path: Path to save compiled pipeline
     """
-    # HINT: Use compiler.Compiler().compile()
-    # HINT: Pass pipeline_func=recommendation_pipeline, package_path=output_path
+    # TODO 8: Compile the pipeline using compiler.Compiler().compile()
+    #         Pass pipeline_func=recommendation_pipeline, package_path=output_path
     # YOUR CODE HERE (3 lines)
 
     print(f"Pipeline compiled to {output_path}")

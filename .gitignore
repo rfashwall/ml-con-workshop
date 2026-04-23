@@ -54,3 +54,7 @@ go.work
 
 # Docker
 *.log
+
+sentiment_model
+
+results

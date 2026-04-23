@@ -16,8 +16,8 @@ from kfp.dsl import component, Input, Output, Dataset, Model, Metrics
 # HINT: base_image="python:3.11-slim"
 # HINT: packages_to_install=["pandas==2.0.3", "numpy==1.24.3", "scikit-learn==1.3.2"]
 @component(
-    base_image="????",  # YOUR CODE HERE
-    packages_to_install=["????", "????", "????"]  # YOUR CODE HERE
+    base_image="????",  # TODO 1: Set to "python:3.11-slim"
+    packages_to_install=["????", "????", "????"]  # TODO 1: Set to ["pandas==2.0.3", "numpy==1.24.3", "scikit-learn==1.3.2"]
 )
 def evaluate_model(
     test_data: Input[Dataset],
@@ -45,7 +45,7 @@ def evaluate_model(
     logger = logging.getLogger(__name__)
 
     # TODO 2: Load model from model.path using pickle
-    # HINT: with open(model.path, 'rb') as f: model_data = pickle.load(f)
+    #         with open(model.path, 'rb') as f: model_data = pickle.load(f)
     # YOUR CODE HERE (2 lines)
 
     user_factors = model_data['user_factors']
@@ -53,8 +53,7 @@ def evaluate_model(
     user_encoder = model_data['user_encoder']
     movie_encoder = model_data['movie_encoder']
 
-    # TODO 3: Load test data from test_data.path
-    # HINT: pd.read_csv(test_data.path)
+    # TODO 3: Load test data — pd.read_csv(test_data.path)
     test_df = None  # YOUR CODE HERE
 
     logger.info(f"Evaluating on {len(test_df)} ratings")
@@ -100,16 +99,14 @@ def evaluate_model(
     logger.info(f"User coverage: {user_coverage:.2%}")
     logger.info(f"Movie coverage: {movie_coverage:.2%}")
 
-    # TODO 4: Log test_rmse metric
-    # HINT: metrics.log_metric("test_rmse", float(rmse))
+    # TODO 4: Log test RMSE — metrics.log_metric("test_rmse", float(rmse))
     # YOUR CODE HERE
 
-    # TODO 5: Log test_mae metric
-    # HINT: metrics.log_metric("test_mae", float(mae))
+    # TODO 5: Log test MAE — metrics.log_metric("test_mae", float(mae))
     # YOUR CODE HERE
 
-    # TODO 6: Log coverage metrics
-    # HINT: Log "user_coverage", "movie_coverage", "n_test_ratings", "n_evaluated_ratings"
+    # TODO 6: Log coverage metrics: "user_coverage", "movie_coverage", "n_test_ratings", "n_evaluated_ratings"
+    #         Use metrics.log_metric(name, value) for each
     # YOUR CODE HERE (4 lines)
 
     # Return evaluation status

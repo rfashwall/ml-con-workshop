@@ -128,7 +128,7 @@ build_local() {
     print_header "Building Local Binary"
 
     print_info "Building gateway binary..."
-    if go build -o gateway step2-production-gateway.go; then
+    if go build -o gateway starter/gateway.go; then
         print_success "Binary built: ./gateway"
 
         # Show binary info
@@ -218,7 +218,7 @@ test_build() {
     print_header "Testing Build"
 
     print_info "Running go build -o /dev/null..."
-    if go build -o /dev/null step2-production-gateway.go; then
+    if go build -o /dev/null starter/gateway.go; then
         print_success "Build test passed"
     else
         print_error "Build test failed"
