@@ -1,6 +1,10 @@
 # Solving the ML Production Puzzle: A Practical Guide to Modern MLOps
 
+<img width="1080" height="1080" alt="Fashwall_MLC_MUC26_SoMe_Workshop_1080x1080_GT-10090_v1" src="https://github.com/user-attachments/assets/b9d924fe-bfcb-4a36-ba87-c0817b5d8ded" />
+
 A hands-on workshop covering the complete journey from ML model development to production deployment using industry-standard tools.
+
+<img width="640" height="795" alt="image" src="https://github.com/user-attachments/assets/e6e7dd3c-1572-487b-adb8-27275d076060" />
 
 ## Overview
 
