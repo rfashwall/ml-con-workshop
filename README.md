@@ -4,8 +4,6 @@
 
 A hands-on workshop covering the complete journey from ML model development to production deployment using industry-standard tools.
 
-<img width="640" height="795" alt="image" src="https://github.com/user-attachments/assets/e6e7dd3c-1572-487b-adb8-27275d076060" />
-
 ## Overview
 
 This 6-hour intensive workshop teaches you to deploy and maintain machine learning models in production. Through progressive hands-on modules, you'll work with Kubernetes, MLflow, BentoML, and Kubeflow to build production-ready ML systems.
@@ -23,6 +21,7 @@ This 6-hour intensive workshop teaches you to deploy and maintain machine learni
 - GitHub Codespaces: Pre-configured cloud environment (works on any OS)
 
 ## Who Am I!
+<img width="640" height="795" alt="image" src="https://github.com/user-attachments/assets/e6e7dd3c-1572-487b-adb8-27275d076060" />
 
 https://www.linkedin.com/in/rabieh-fashwall/
 
